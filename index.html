@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SentinelCAT — Deterministic Failure Classification</title>
+  <style>
+    :root { color-scheme: light; }
+    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+    header { padding: 18px 20px; border-bottom: 1px solid #e6e6e6; }
+    header h1 { margin: 0; font-size: 18px; }
+    header p { margin: 6px 0 0; color: #444; font-size: 13px; line-height: 1.35; }
+    main { padding: 18px 20px; max-width: 1100px; }
+    .grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
+    @media (min-width: 1000px) { .grid { grid-template-columns: 1.1fr 0.9fr; } }
+    .card { border: 1px solid #e6e6e6; border-radius: 10px; padding: 14px; }
+    .card h2 { margin: 0 0 10px; font-size: 14px; }
+    .row { display: grid; grid-template-columns: 1fr; gap: 10px; }
+    label { font-size: 12px; color: #333; display: block; margin-bottom: 6px; }
+    textarea, input { width: 100%; box-sizing: border-box; padding: 10px; border-radius: 8px; border: 1px solid #d8d8d8; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 12px; }
+    textarea { min-height: 270px; resize: vertical; }
+    .btns { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+    button { padding: 10px 12px; border-radius: 10px; border: 1px solid #cfcfcf; background: #fff; cursor: pointer; font-weight: 600; font-size: 12px; }
+    button.primary { border-color: #111; background: #111; color: #fff; }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+    .small { font-size: 12px; color: #444; line-height: 1.4; }
+    pre { margin: 0; white-space: pre-wrap; word-break: break-word; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 12px; }
+    .pill { display: inline-block; padding: 4px 8px; border-radius: 999px; border: 1px solid #ddd; font-size: 12px; margin-right: 8px; }
+    .ok { color: #0a7a2f; border-color: #bfe6c9; background: #f2fff6; }
+    .bad { color: #a31212; border-color: #f0bcbc; background: #fff5f5; }
+    .muted { color: #666; }
+    .kv { display: grid; grid-template-columns: 140px 1fr; gap: 8px 12px; align-items: start; }
+    .kv div { padding: 2px 0; }
+    footer { padding: 14px 20px; border-top: 1px solid #e6e6e6; color: #666; font-size: 12px; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>SentinelCAT</h1>
+    <p>
+      Deterministic failure classification (no AI / no heuristics). Paste a <code>{"signals": {...}}</code> JSON payload and run.
+      Output is a primary failure class + optional amplifiers + rationale.
+    </p>
+  </header>
+
+  <main class="grid">
+    <section class="card">
+      <h2>Input Payload</h2>
+      <div class="small muted">Format: <code>{"signals": {"cp_api_p95_ms": 1800, ...}}</code>. Missing signals are allowed.</div>
+
+      <div class="row" style="margin-top:10px;">
+        <label for="payload">Payload JSON</label>
+        <textarea id="payload" spellcheck="false"></textarea>
+      </div>
+
+      <div class="btns">
+        <button class="primary" id="runBtn">Classify</button>
+        <button id="example1Btn">Load Example (Control-Plane Loss)</button>
+        <button id="example2Btn">Load Example (Retry Storm)</button>
+        <button id="example3Btn">Load Example (Config Fanout)</button>
+        <button id="clearBtn">Clear</button>
+      </div>
+
+      <div class="small" style="margin-top:10px;">
+        API endpoint: <code>POST /api/classify</code> (JSON body). Also: <code>GET /health</code>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Result</h2>
+      <div id="statusLine" class="small muted">Ready.</div>
+
+      <div style="margin-top:10px;">
+        <span class="pill muted" id="primaryPill">primary: —</span>
+        <span class="pill muted" id="amplifiersPill">amplifiers: —</span>
+      </div>
+
+      <div style="margin-top:12px;" class="kv">
+        <div class="muted">matched_rules</div>
+        <div><pre id="rulesPre">—</pre></div>
+
+        <div class="muted">rationale</div>
+        <div><pre id="rationalePre">—</pre></div>
+
+        <div class="muted">raw JSON</div>
+        <div><pre id="rawPre">—</pre></div>
+      </div>
+
+      <div style="margin-top:12px;" class="small muted">
+        Tip: this UI is intentionally minimal. SentinelCAT consumes your computed signals; it does not collect telemetry.
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    SentinelCAT — deterministic classification & containment posture. Runs locally. No agents. No telemetry ingest.
+  </footer>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+
+  const payloadEl = $("payload");
+  const runBtn = $("runBtn");
+
+  const statusLine = $("statusLine");
+  const primaryPill = $("primaryPill");
+  const amplifiersPill = $("amplifiersPill");
+  const rulesPre = $("rulesPre");
+  const rationalePre = $("rationalePre");
+  const rawPre = $("rawPre");
+
+  function setStatus(ok, msg) {
+    statusLine.textContent = msg;
+    statusLine.className = "small " + (ok ? "ok" : "bad");
+  }
+
+  function setPills(primary, amplifiers) {
+    primaryPill.textContent = "primary: " + (primary || "—");
+    primaryPill.className = "pill " + (primary ? "ok" : "muted");
+
+    const amps = (amplifiers && amplifiers.length) ? amplifiers.join(", ") : "—";
+    amplifiersPill.textContent = "amplifiers: " + amps;
+    amplifiersPill.className = "pill " + ((amplifiers && amplifiers.length) ? "ok" : "muted");
+  }
+
+  function setResult(resultObj) {
+    const r = resultObj || {};
+    setPills(r.primary_failure_class, r.amplifiers || []);
+    rulesPre.textContent = JSON.stringify(r.matched_rules || [], null, 2);
+    rationalePre.textContent = JSON.stringify(r.rationale || [], null, 2);
+    rawPre.textContent = JSON.stringify(r, null, 2);
+  }
+
+  async function classifyNow() {
+    runBtn.disabled = true;
+    setStatus(true, "Classifying…");
+
+    let payload;
+    try {
+      payload = JSON.parse(payloadEl.value || "{}");
+    } catch (e) {
+      runBtn.disabled = false;
+      setStatus(false, "Invalid JSON. Fix payload and retry.");
+      return;
+    }
+
+    try {
+      const resp = await fetch("/api/classify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await resp.json().catch(() => ({}));
+
+      if (!resp.ok || !data.ok) {
+        const detail = (data && (data.error || data.detail)) ? (data.error + (data.detail ? " — " + data.detail : "")) : "Request failed.";
+        setStatus(false, detail);
+        setResult(null);
+      } else {
+        setStatus(true, "OK — deterministic classification complete.");
+        setResult(data.result);
+      }
+    } catch (e) {
+      setStatus(false, "Network/server error: " + String(e));
+      setResult(null);
+    } finally {
+      runBtn.disabled = false;
+    }
+  }
+
+  function loadExample(name) {
+    const examples = {
+      cp_loss: {
+        signals: {
+          cp_api_p95_ms: 1800,
+          cp_api_error_rate: 0.08,
+          dp_request_success_rate: 0.995,
+          dp_p95_ms: 120
+        }
+      },
+      retry_storm: {
+        signals: {
+          retry_rate_per_req: 1.2,
+          cpu_utilization: 0.95,
+          connection_pool_exhausted: true,
+          queue_depth: 42
+        }
+      },
+      cfg_fanout: {
+        signals: {
+          config_push_rate_per_min: 80,
+          rollout_scope_percent: 100,
+          telemetry_drop_rate: 0.10
+        }
+      }
+    };
+    payloadEl.value = JSON.stringify(examples[name], null, 2);
+    setStatus(true, "Loaded example payload.");
+    setResult(null);
+    setPills(null, []);
+    rulesPre.textContent = "—";
+    rationalePre.textContent = "—";
+    rawPre.textContent = "—";
+  }
+
+  $("example1Btn").addEventListener("click", () => loadExample("cp_loss"));
+  $("example2Btn").addEventListener("click", () => loadExample("retry_storm"));
+  $("example3Btn").addEventListener("click", () => loadExample("cfg_fanout"));
+
+  $("clearBtn").addEventListener("click", () => {
+    payloadEl.value = "";
+    setStatus(true, "Cleared.");
+    setResult(null);
+    setPills(null, []);
+    rulesPre.textContent = "—";
+    rationalePre.textContent = "—";
+    rawPre.textContent = "—";
+  });
+
+  runBtn.addEventListener("click", classifyNow);
+
+  // Default payload (so it works immediately)
+  loadExample("cp_loss");
+</script>
+
+<hr style="margin-top: 2em;">
+
+<div style="font-size: 0.9em; color: #666;">
+  <a href="/installation">Installation & Integration</a>
+</div>
+
+</body>
+</html>

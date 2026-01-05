@@ -1,0 +1,453 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>SentinelCAT — Installation & Usage</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    body {
+      margin: 0;
+      padding: 24px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      color: #111;
+      background: #fff;
+      line-height: 1.45;
+    }
+    h1, h2, h3 {
+      font-weight: 600;
+      margin-top: 1.6em;
+    }
+    h1 { font-size: 22px; margin-top: 0; }
+    h2 { font-size: 18px; border-bottom: 1px solid #e6e6e6; padding-bottom: 6px; }
+    h3 { font-size: 15px; }
+    p { max-width: 900px; }
+    ul { max-width: 900px; }
+    li { margin: 6px 0; }
+    code, pre {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+      background: #f7f7f7;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+    pre {
+      padding: 12px;
+      overflow-x: auto;
+    }
+    .note {
+      background: #f2f4f7;
+      border-left: 4px solid #999;
+      padding: 12px;
+      margin: 16px 0;
+      max-width: 900px;
+    }
+    .warn {
+      background: #fff5f5;
+      border-left: 4px solid #c33;
+      padding: 12px;
+      margin: 16px 0;
+      max-width: 900px;
+    }
+    .section {
+      margin-bottom: 28px;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>SentinelCAT — Installation & Usage</h1>
+
+<p>
+This document describes how SentinelCAT is deployed, integrated, and used
+across Tier 1, Tier 2, and Enterprise installations.
+</p>
+
+<p>
+SentinelCAT is a deterministic failure-classification and containment engine.
+It does not perform observability, telemetry collection, anomaly detection,
+or automated remediation.
+</p>
+
+<div class="section">
+<h2>1. What SentinelCAT Is</h2>
+
+<ul>
+  <li>A single internal service that classifies infrastructure failure modes</li>
+  <li>Consumes numeric and boolean signals computed by the customer</li>
+  <li>Outputs a failure class, amplifiers, and rationale</li>
+  <li>Designed to prevent outage amplification</li>
+</ul>
+</div>
+
+<div class="section">
+<h2>2. What SentinelCAT Is Not</h2>
+
+<ul>
+  <li>Not an observability platform</li>
+  <li>Not an alerting system</li>
+  <li>Not an AI or learning system</li>
+  <li>Not an auto-healing or remediation engine</li>
+</ul>
+
+<p>
+SentinelCAT asserts containment posture. Humans decide actions.
+</p>
+</div>
+
+<div class="section">
+<h2>3. Deployment Model (All Tiers)</h2>
+
+<ul>
+  <li>Single internal service (container or VM)</li>
+  <li>No outbound network dependencies</li>
+  <li>No agents installed on workloads</li>
+  <li>No persistent data storage required</li>
+</ul>
+
+<p>
+SentinelCAT is typically deployed alongside existing platform or SRE tooling.
+</p>
+
+<div class="note">
+<strong>Security note:</strong><br/>
+SentinelCAT does not require access to raw logs, metrics streams, or production credentials.
+Only derived signals are provided.
+</div>
+</div>
+
+<div class="section">
+<h2>4. Signal Ingestion</h2>
+
+<p>
+SentinelCAT consumes a JSON payload containing a snapshot of signals:
+</p>
+
+<pre>{
+  "signals": {
+    "cp_api_p95_ms": 1800,
+    "dp_request_success_rate": 0.995,
+    "retry_rate_per_req": 1.2,
+    "cpu_utilization": 0.94
+  }
+}</pre>
+
+<p>
+Signals are computed by the customer from existing systems
+(Prometheus, CloudWatch, logs, internal metrics).
+</p>
+
+<p>
+Missing signals are permitted. Rules depending on missing signals are skipped.
+</p>
+</div>
+
+<div class="section">
+<h2>5. Output Semantics</h2>
+
+<p>
+Each classification produces:
+</p>
+
+<ul>
+  <li><strong>Primary failure class</strong></li>
+  <li><strong>Optional amplifiers</strong> (e.g., operator blindness)</li>
+  <li><strong>Matched rules</strong></li>
+  <li><strong>Human-readable rationale</strong></li>
+</ul>
+
+<p>
+Output is deterministic. The same signals always produce the same result.
+</p>
+</div>
+
+<div class="section">
+<h2>6. Tier 1 Installation — Structural Containment</h2>
+
+<p>
+Typical deployment time: <strong>hours</strong>
+</p>
+
+<p>
+Tier 1 focuses on preventing outage amplification.
+</p>
+
+<ul>
+  <li>Cascading resource exhaustion</li>
+  <li>Retry storms</li>
+  <li>Configuration fan-out</li>
+  <li>Safety mechanism lockout</li>
+</ul>
+
+<p>
+Integration steps:
+</p>
+
+<ul>
+  <li>Deploy SentinelCAT service</li>
+  <li>Define a minimal signal set</li>
+  <li>Feed signals on a fixed interval</li>
+  <li>Expose output to incident responders</li>
+</ul>
+</div>
+
+<div class="section">
+<h2>7. Tier 2 Installation — Control & Dependency Integrity</h2>
+
+<p>
+Typical deployment time: <strong>1–2 days</strong>
+</p>
+
+<p>
+Tier 2 extends classification to platform-wide risks:
+</p>
+
+<ul>
+  <li>Control-plane loss</li>
+  <li>Shared dependency collapse (auth/DNS)</li>
+  <li>Hidden transitive dependencies</li>
+  <li>Time skew amplification</li>
+</ul>
+
+<p>
+Additional integration includes:
+</p>
+
+<ul>
+  <li>Cross-service dependency signals</li>
+  <li>Control-plane health signals</li>
+  <li>Time and lease integrity signals</li>
+</ul>
+</div>
+
+<div class="section">
+<h2>8. Enterprise Installation — Platform-Specific Integration</h2>
+
+<p>
+Typical deployment time: <strong>multiple days</strong>
+</p>
+
+<p>
+Enterprise deployments address complex, bespoke platforms:
+</p>
+
+<ul>
+  <li>Multi-region control planes</li>
+  <li>Custom orchestration layers</li>
+  <li>Internal identity and access systems</li>
+  <li>Non-standard recovery automation</li>
+</ul>
+
+<p>
+Enterprise installations may include:
+</p>
+
+<ul>
+  <li>Custom signal definitions</li>
+  <li>Authority inconsistency detection</li>
+  <li>Platform-specific invariants</li>
+</ul>
+</div>
+
+<div class="section">
+<h2>9. Operator Responsibilities</h2>
+
+<ul>
+  <li>Define signal computation correctly</li>
+  <li>Feed signals on a consistent interval</li>
+  <li>Interpret containment assertions</li>
+  <li>Decide and execute remediation actions</li>
+</ul>
+
+<div class="warn">
+<strong>Important:</strong><br/>
+SentinelCAT does not take action on your infrastructure.
+Containment decisions remain human-controlled by design.
+</div>
+</div>
+
+<div class="section">
+<h2>10. Versioning & Stability</h2>
+
+<ul>
+  <li>Failure class ontology is stable within a major version</li>
+  <li>Signal contract changes are versioned explicitly</li>
+  <li>No silent behavior changes</li>
+</ul>
+</div>
+
+<div class="section">
+<h2>11. Signal Adapter Configuration (Required)</h2>
+
+<p>
+SentinelCAT is not configured per application or service.
+It is configured once per environment via a <strong>Signal Adapter</strong>.
+</p>
+
+<p>
+The Signal Adapter is a small customer-owned job or service that:
+</p>
+
+<ul>
+  <li>Queries existing telemetry systems</li>
+  <li>Computes derived numeric and boolean signals</li>
+  <li>Submits a signal snapshot to SentinelCAT on a fixed interval</li>
+</ul>
+
+<p>
+This adapter is the only required integration point.
+</p>
+
+<h3>11.1 Where the Signal Adapter Runs</h3>
+
+<p>
+The Signal Adapter typically runs as one of the following:
+</p>
+
+<ul>
+  <li>Kubernetes CronJob or Deployment</li>
+  <li>Internal platform service</li>
+  <li>VM-based scheduled job</li>
+  <li>Existing reliability or SRE automation process</li>
+</ul>
+
+<p>
+It must be able to reach SentinelCAT over the internal network.
+</p>
+
+<h3>11.2 What the Signal Adapter Reads</h3>
+
+<p>
+The adapter reads from systems you already operate, such as:
+</p>
+
+<ul>
+  <li>Prometheus or compatible metrics stores</li>
+  <li>CloudWatch or cloud-native metrics</li>
+  <li>Internal telemetry pipelines</li>
+  <li>Derived aggregates from logs or traces</li>
+</ul>
+
+<p>
+SentinelCAT does not ingest raw telemetry. Only derived signals are provided.
+</p>
+
+<h3>11.3 Signal Computation</h3>
+
+<p>
+Signals are computed over consistent rolling windows, for example:
+</p>
+
+<ul>
+  <li>1–5 minutes for rates and latency</li>
+  <li>15–60 minutes for drift, expiry, or stability checks</li>
+</ul>
+
+<p>
+Each signal represents an invariant-relevant condition, such as:
+</p>
+
+<ul>
+  <li>Control-plane latency percentiles</li>
+  <li>Retry amplification ratios</li>
+  <li>Configuration propagation rates</li>
+  <li>Resource saturation indicators</li>
+  <li>Boolean assertions (e.g. rollback possible, admin actions blocked)</li>
+</ul>
+
+<h3>11.4 Payload Format</h3>
+
+<p>
+The adapter sends a JSON payload to SentinelCAT:
+</p>
+
+<pre>{
+  "signals": {
+    "cp_api_p95_ms": 1800,
+    "cp_api_error_rate": 0.08,
+    "dp_request_success_rate": 0.995,
+    "retry_rate_per_req": 1.2,
+    "cpu_utilization": 0.94,
+    "rollback_possible": false
+  }
+}</pre>
+
+<p>
+Missing signals are allowed.
+Rules depending on missing signals are skipped deterministically.
+</p>
+
+<h3>11.5 Submission Frequency</h3>
+
+<p>
+Typical submission intervals are:
+</p>
+
+<ul>
+  <li>30 seconds</li>
+  <li>60 seconds</li>
+  <li>120 seconds</li>
+</ul>
+
+<p>
+Intervals should be fixed and predictable.
+SentinelCAT does not require real-time streaming.
+</p>
+
+<h3>11.6 Example Adapter (Pseudo-Code)</h3>
+
+<pre>
+signals = {
+  "cp_api_p95_ms": query_metrics("control_plane_latency_p95"),
+  "retry_rate_per_req": compute_retry_rate(),
+  "cpu_utilization": cluster_cpu_max(),
+  "config_push_rate_per_min": config_push_velocity(),
+}
+
+payload = { "signals": signals }
+
+POST http://sentinelcat.internal/api/classify
+</pre>
+
+<h3>11.7 Handling Classification Output</h3>
+
+<p>
+SentinelCAT returns:
+</p>
+
+<ul>
+  <li>Primary failure class</li>
+  <li>Optional amplifiers</li>
+  <li>Matched rules</li>
+  <li>Rationale</li>
+</ul>
+
+<p>
+The Signal Adapter or downstream tooling routes this output to humans:
+</p>
+
+<ul>
+  <li>Incident response channels</li>
+  <li>Runbooks</li>
+  <li>Operational dashboards</li>
+  <li>Ticketing or escalation systems</li>
+</ul>
+
+<p>
+SentinelCAT does not trigger actions directly.
+</p>
+
+<div class="warn">
+<strong>Design constraint:</strong><br/>
+SentinelCAT intentionally does not perform automated remediation.
+Containment decisions remain human-controlled.
+</div>
+
+</div>
+
+<p>
+— End of document —
+</p>
+
+</body>
+</html>
