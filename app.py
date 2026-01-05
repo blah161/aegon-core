@@ -8,6 +8,7 @@ APP_DIR = os.path.dirname(os.path.abspath(__file__))
 app = Flask(__name__)
 
 @app.route("/installation", methods=["GET"])
+@app.route("/installation.html", methods=["GET"])
 def installation():
     return send_from_directory(APP_DIR, "installation.html")
 
