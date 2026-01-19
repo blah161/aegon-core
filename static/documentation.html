@@ -296,7 +296,7 @@
         <li><a href="#section-5-2">Authority Inconsistency</a></li>
         <li><a href="#section-5-3">Cascading Resource Exhaustion</a></li>
         <li><a href="#section-5-4">Temporal Drift</a></li>
-        <li><a href="#section-5-5">Dependency Collapse</a></li>
+        <li><a href="#section-5-5">Dependency Collaps e</a></li>
         <li><a href="#section-5-6">Feedback Amplification</a></li>
         <li><a href="#section-5-7">Control Plane Saturation</a></li>
         <li><a href="#section-5-8">Data Plane Divergence</a></li>
@@ -479,7 +479,7 @@
   </p>
 
   <!-- 5.1 -->
-  <h3>5.1 Configuration Fanout</h3>
+  <h3 id="section-5-1">5.1 Configuration Fanout</h3>
   <pre><code>{
   "primary_failure_class": "CONFIGURATION_FANOUT",
   "matched_rules": ["P_CFG_FANOUT"],
@@ -490,11 +490,12 @@
   }
 }</code></pre>
   <p class="caption">
-    Configuration changes propagate across multiple subsystems simultaneously. This indicates elevated blast radius caused by global configuration scope.
+    Configuration changes propagate across multiple subsystems simultaneously.
+    This indicates elevated blast radius caused by global configuration scope.
   </p>
 
   <!-- 5.2 -->
-  <h3>5.2 Authority Inconsistency</h3>
+  <h3 id="section-5-2">5.2 Authority Inconsistency</h3>
   <pre><code>{
   "primary_failure_class": "AUTHORITY_INCONSISTENCY",
   "matched_rules": ["P_AUTH_SPLIT"],
@@ -505,11 +506,12 @@
   }
 }</code></pre>
   <p class="caption">
-    Multiple entities assert control over the same decision domain. This reflects breakdowns in coordination or consensus resolution.
+    Multiple entities assert control over the same decision domain.
+    This reflects breakdowns in coordination or consensus resolution.
   </p>
 
   <!-- 5.3 -->
-  <h3>5.3 Cascading Resource Exhaustion</h3>
+  <h3 id="section-5-3">5.3 Cascading Resource Exhaustion</h3>
   <pre><code>{
   "primary_failure_class": "CASCADING_RESOURCE_EXHAUSTION",
   "matched_rules": ["P_RESOURCE_CHAIN"],
@@ -520,11 +522,12 @@
   }
 }</code></pre>
   <p class="caption">
-    Resource saturation spreads through dependent components. This reflects amplification effects caused by tight coupling.
+    Resource saturation spreads through dependent components.
+    This reflects amplification effects caused by tight coupling.
   </p>
 
   <!-- 5.4 -->
-  <h3>5.4 Temporal Drift</h3>
+  <h3 id="section-5-4">5.4 Temporal Drift</h3>
   <pre><code>{
   "primary_failure_class": "TEMPORAL_DRIFT",
   "matched_rules": ["P_TIME_SKEW"],
@@ -534,11 +537,12 @@
   }
 }</code></pre>
   <p class="caption">
-    System components operate under inconsistent time assumptions. This can invalidate ordering guarantees and coordination logic.
+    System components operate under inconsistent time assumptions.
+    This can invalidate ordering guarantees and coordination logic.
   </p>
 
   <!-- 5.5 -->
-  <h3>5.5 Dependency Collapse</h3>
+  <h3 id="section-5-5">5.5 Dependency Collapse</h3>
   <pre><code>{
   "primary_failure_class": "DEPENDENCY_COLLAPSE",
   "matched_rules": ["P_DEP_CHAIN"],
@@ -548,11 +552,12 @@
   }
 }</code></pre>
   <p class="caption">
-    Failure of a critical dependency disables downstream functionality. This exposes hidden coupling within the dependency graph.
+    Failure of a critical dependency disables downstream functionality.
+    This exposes hidden coupling within the dependency graph.
   </p>
 
   <!-- 5.6 -->
-  <h3>5.6 Feedback Amplification</h3>
+  <h3 id="section-5-6">5.6 Feedback Amplification</h3>
   <pre><code>{
   "primary_failure_class": "FEEDBACK_AMPLIFICATION",
   "matched_rules": ["P_FEEDBACK_LOOP"],
@@ -562,11 +567,12 @@
   }
 }</code></pre>
   <p class="caption">
-    System responses amplify their own triggering conditions. This often precedes runaway instability or oscillation.
+    System responses amplify their own triggering conditions.
+    This often precedes runaway instability or oscillation.
   </p>
 
   <!-- 5.7 -->
-  <h3>5.7 Control Plane Saturation</h3>
+  <h3 id="section-5-7">5.7 Control Plane Saturation</h3>
   <pre><code>{
   "primary_failure_class": "CONTROL_PLANE_SATURATION",
   "matched_rules": ["P_CTRL_PRESSURE"],
@@ -576,11 +582,12 @@
   }
 }</code></pre>
   <p class="caption">
-    Control mechanisms become overwhelmed by management traffic. This degrades the system’s ability to adapt or recover.
+    Control mechanisms become overwhelmed by management traffic.
+    This degrades the system’s ability to adapt or recover.
   </p>
 
   <!-- 5.8 -->
-  <h3>5.8 Data Plane Divergence</h3>
+  <h3 id="section-5-8">5.8 Data Plane Divergence</h3>
   <pre><code>{
   "primary_failure_class": "DATA_PLANE_DIVERGENCE",
   "matched_rules": ["P_DATA_SPLIT"],
@@ -590,11 +597,12 @@
   }
 }</code></pre>
   <p class="caption">
-    Operational state differs between data plane instances. This undermines consistency and correctness guarantees.
+    Operational state differs between data plane instances.
+    This undermines consistency and correctness guarantees.
   </p>
 
   <!-- 5.9 -->
-  <h3>5.9 Partial Failure Masking</h3>
+  <h3 id="section-5-9">5.9 Partial Failure Masking</h3>
   <pre><code>{
   "primary_failure_class": "PARTIAL_FAILURE_MASKING",
   "matched_rules": ["P_MASKED_FAIL"],
@@ -604,11 +612,12 @@
   }
 }</code></pre>
   <p class="caption">
-    Automatic recovery mechanisms obscure underlying faults. This delays detection while accumulating systemic risk.
+    Automatic recovery mechanisms obscure underlying faults.
+    This delays detection while accumulating systemic risk.
   </p>
 
   <!-- 5.10 -->
-  <h3>5.10 Recovery Thrashing</h3>
+  <h3 id="section-5-10">5.10 Recovery Thrashing</h3>
   <pre><code>{
   "primary_failure_class": "RECOVERY_THRASHING",
   "matched_rules": ["P_REC_LOOP"],
@@ -618,11 +627,12 @@
   }
 }</code></pre>
   <p class="caption">
-    The system repeatedly attempts recovery without stabilization. This indicates unresolved root causes or unstable remediation logic.
+    The system repeatedly attempts recovery without stabilization.
+    This indicates unresolved root causes or unstable remediation logic.
   </p>
 
   <!-- 5.11 -->
-  <h3>5.11 Invariant Erosion</h3>
+  <h3 id="section-5-11">5.11 Invariant Erosion</h3>
   <pre><code>{
   "primary_failure_class": "INVARIANT_EROSION",
   "matched_rules": ["P_INV_WEAKEN"],
@@ -632,11 +642,12 @@
   }
 }</code></pre>
   <p class="caption">
-    Gradual weakening of constraints that ensure correct behavior. This captures slow degradation of assumptions that once guaranteed stability.
+    Gradual weakening of constraints that ensure correct behavior.
+    This captures slow degradation of assumptions that once guaranteed stability.
   </p>
 
   <!-- 5.12 -->
-  <h3>5.12 Observability Blind Spot</h3>
+  <h3 id="section-5-12">5.12 Observability Blind Spot</h3>
   <pre><code>{
   "primary_failure_class": "OBSERVABILITY_BLIND_SPOT",
   "matched_rules": ["P_OBS_GAP"],
@@ -646,11 +657,12 @@
   }
 }</code></pre>
   <p class="caption">
-    Insufficient visibility into system state obscures emerging faults. This increases detection latency and response uncertainty.
+    Insufficient visibility into system state obscures emerging faults.
+    This increases detection latency and response uncertainty.
   </p>
 
   <!-- 5.13 -->
-  <h3>5.13 Configuration Drift</h3>
+  <h3 id="section-5-13">5.13 Configuration Drift</h3>
   <pre><code>{
   "primary_failure_class": "CONFIGURATION_DRIFT",
   "matched_rules": ["P_CFG_DRIFT"],
@@ -660,7 +672,8 @@
   }
 }</code></pre>
   <p class="caption">
-    Deployed configuration diverges from intended state. This often results from manual intervention or incomplete rollout processes.
+    Deployed configuration diverges from intended state.
+    This often results from manual intervention or incomplete rollout processes.
   </p>
 
 </section>

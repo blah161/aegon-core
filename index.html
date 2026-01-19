@@ -36,13 +36,21 @@
   </style>
 </head>
 <body>
-  <header>
+  <header style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px;">
+  <div>
     <h1>SentinelCAT</h1>
     <p>
       Deterministic failure classification (no AI / no heuristics). Paste a <code>{"signals": {...}}</code> JSON payload and run.
       Output is a primary failure class + optional amplifiers + rationale.
     </p>
-  </header>
+  </div>
+
+  <div style="font-size:13px; white-space:nowrap;">
+    <a href="/static/documentation.html" target="_blank" style="text-decoration:none;">
+      📘 Technical Documentation
+    </a>
+  </div>
+</header>
 
   <main class="grid">
     <section class="card">
@@ -225,11 +233,7 @@
   loadExample("cp_loss");
 </script>
 
-<hr style="margin-top: 2em;">
 
-<div style="font-size: 0.9em; color: #666;">
-  <a href="/static/documentation.html" target="_blank">📘 Technical Documentation</a>
-</div>
 
 </body>
 </html>
