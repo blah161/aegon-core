@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>SentinelCAT — Deterministic Failure Classification</title>
+  <title>AEGON — Deterministic Failure Classification</title>
   <style>
     :root { color-scheme: light; }
     body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
@@ -38,7 +38,7 @@
 <body>
   <header style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px;">
   <div>
-    <h1>SentinelCAT</h1>
+    <h1>AEGON</h1>
     <p>
       Deterministic failure classification (no AI / no heuristics). Paste a <code>{"signals": {...}}</code> JSON payload and run.
       Output is a primary failure class + optional amplifiers + rationale.
@@ -53,6 +53,7 @@
 </header>
 
   <main class="grid">
+    
     <section class="card">
       <h2>Input Payload</h2>
       <div class="small muted">Format: <code>{"signals": {"cp_api_p95_ms": 1800, ...}}</code>. Missing signals are allowed.</div>
@@ -96,13 +97,13 @@
       </div>
 
       <div style="margin-top:12px;" class="small muted">
-        Tip: this UI is intentionally minimal. SentinelCAT consumes your computed signals; it does not collect telemetry.
+        Tip: this UI is intentionally minimal. AEGON consumes your computed signals; it does not collect telemetry.
       </div>
     </section>
   </main>
 
   <footer>
-    SentinelCAT — deterministic classification & containment posture. Runs locally. No agents. No telemetry ingest.
+    AEGON — deterministic classification & containment posture. Runs locally. No agents. No telemetry ingest.
   </footer>
 
 <script>
